@@ -69,8 +69,8 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("AddressLine", SoType.Text, "Address Line", "Address Line")]
         public string AddressLine { get; set; }
 
-        [Attributes.Property("Postcode", SoType.Text, "Postcode", "Postcode")]
-        public string Postcode { get; set; }
+        [Attributes.Property("PostalCode", SoType.Text, "Postal Code", "Postal Code")]
+        public string PostalCode { get; set; }
 
         [Attributes.Property("FormattedAddress", SoType.Memo, "Formatted Address", "Formatted Address")]
         public string FormattedAddress { get; set; }
@@ -93,9 +93,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("Landmark", SoType.Text, "Landmark", "Landmark")]
         public string Landmark { get; set; }
 
-        [Attributes.Property("PostalTown", SoType.Text, "Postal Town", "Postal Town")]
-        public string PostalTown { get; set; }
-
         [Attributes.Property("Latitude", SoType.Decimal, "Latitude", "Latitude")]
         public float Latitude { get; set; }
 
@@ -105,7 +102,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("ImagePath", SoType.Text, "Image Path", "Image Path")]
         public string ImagePath { get; set; }
 
-        [Attributes.Property("ImageBase64", SoType.Text, "Image Base64", "Image Base64")]
+        [Attributes.Property("ImageBase64", SoType.Memo, "Image Base64", "Image Base64")]
         public string ImageBase64 { get; set; }
 
         [Attributes.Property("ImageUri", SoType.Text, "Image Uri", "Image Uri")]
@@ -119,6 +116,9 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
         [Attributes.Property("ImageFilename", SoType.Text, "Image Filename", "Image Filename")]
         public string ImageFilename { get; set; }
+
+        [Attributes.Property("ImageContentType", SoType.Text, "Image Content Type", "Image Content Type")]
+        public string ImageContentType { get; set; }
 
         [Attributes.Property("SouthLatitude", SoType.Decimal, "South Latitude", "South Latitude")]
         public float SouthLatitude { get; set; }
@@ -149,10 +149,10 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
 
 
-        [Attributes.Method("SearchByLocationRead", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Search By Location Read", "Search By Location Read",
+        [Attributes.Method("SearchByLocationRead", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Search By Location (Read)", "Search By Location (Read)",
         new string[] { "Query" }, //required property array (no required properties for this sample)
         new string[] { "Query" }, //input property array (no optional input properties for this sample)
-        new string[] { "Query", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        new string[] { "Query", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
         public BingMaps SearchByLocationRead()
         {
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
@@ -174,7 +174,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
             Resource resource = res.resourceSets[0].resources[0];
 
             MapBingMaps(this, resource);
-
+            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
             this.ResultStatus = "OK";
 
             return this;
@@ -183,7 +183,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Method("SearchByLocation", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.List, "Search By Location", "Search By Location",
         new string[] { "Query" }, //required property array (no required properties for this sample)
         new string[] { "Query", "MaxResults"}, //input property array (no optional input properties for this sample)
-        new string[] { "Query", "MaxResults", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        new string[] { "Query", "MaxResults", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
         public List<BingMaps> SearchByLocationList()
         {
             List<BingMaps> results = new List<BingMaps>();
@@ -219,6 +219,9 @@ namespace K2Field.SmartObjects.Services.BingMaps
             {
                 BingMaps map = new BingMaps();
                 MapBingMaps(map, resource);
+                map.Query = this.Query;
+                map.MaxResults = this.MaxResults;
+                map.EstimatedTotal = res.resourceSets[0].estimatedTotal;
                 map.ResultStatus = "OK"; 
                 results.Add(map);
             }
@@ -230,10 +233,10 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
 
 
-        [Attributes.Method("SearchByLatLonRead", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Search By Lat Lon Read", "Search By Lat Lon Read",
+        [Attributes.Method("SearchByLatLonRead", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Search By Lat Lon (Read)", "Search By Lat Lon (Read)",
         new string[] { "Lat", "Lon" }, //required property array (no required properties for this sample)
         new string[] { "Lat", "Lon", "IncludeEntityTypes" }, //input property array (no optional input properties for this sample)
-        new string[] { "Lat", "Lon", "IncludeEntityTypes", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        new string[] { "Lat", "Lon", "IncludeEntityTypes", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
         public BingMaps SearchByLatLonRead()
         {
             if(string.IsNullOrWhiteSpace(this.IncludeEntityTypes))
@@ -260,7 +263,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
             Resource resource = res.resourceSets[0].resources[0];
 
             MapBingMaps(this, resource);
-
+            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
             this.ResultStatus = "OK";
 
             return this;
@@ -269,7 +272,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Method("SearchByLatLon", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.List, "Search By Lat Lon", "Search By Lat Lon",
         new string[] { "Lat", "Lon" }, //required property array (no required properties for this sample)
         new string[] { "Lat", "Lon", "IncludeEntityTypes"}, //input property array (no optional input properties for this sample)
-        new string[] { "Lat", "Lon", "IncludeEntityTypes", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        new string[] { "Lat", "Lon", "IncludeEntityTypes", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
         public List<BingMaps> SearchByLatLonList()
         {
             List<BingMaps> results = new List<BingMaps>();
@@ -292,6 +295,10 @@ namespace K2Field.SmartObjects.Services.BingMaps
             {
                 BingMaps map = new BingMaps();
                 MapBingMaps(map, resource);
+                map.Lat = this.Lat;
+                map.Lon = this.Lon;
+                map.IncludeEntityTypes = this.IncludeEntityTypes;
+                map.EstimatedTotal = res.resourceSets[0].estimatedTotal;
                 map.ResultStatus = "OK";
                 results.Add(map);
             }
@@ -301,18 +308,12 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
 
 
-        [Attributes.Method("GetMapImageByLatLon", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Get Map Image By Lat Lon Read", "Get Map Image By Lat Lon Read",
+        [Attributes.Method("GetMapImageByLatLon", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Get Map Image By Lat Lon (Read)", "Get Map Image By Lat Lon (Read)",
         new string[] { "Lat", "Lon" }, //required property array (no required properties for this sample)
         new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat"}, //input property array (no optional input properties for this sample)
-        new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "LocationName", "Latitude", "Longitude", "Image", "ImageBase64", "ImageSize", "ImageFilename", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "Image", "ImageBase64", "ImageSize", "ImageFilename", "ImageContentType", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
         public BingMaps GetMapImageByLatLon()
         {
-            //image metadata
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
-            // image
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
-            //https://msdn.microsoft.com/en-us/library/ff701724.aspx
-
             /* need to:
              * pushpin co-ordinates
              * pushpint label
@@ -320,9 +321,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
              * image format - jpeg, png,
              * map layer
              * */
-
-
-
 
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
             PushPin p = new PushPin()
@@ -350,12 +348,14 @@ namespace K2Field.SmartObjects.Services.BingMaps
             }
 
             Resource resource = res.resourceSets[0].resources[0];
-
+            
             MapBingMaps(this, resource);
             this.ImageBase64 = file.Base64;
             this.ImageSize = file.Size;
-            string filename = Guid.NewGuid() + "." + file.FileExtension;
+            string filename = Guid.NewGuid() + file.FileExtension;
             this.ImageFilename = filename;
+            this.ImageContentType = file.ContentType;
+            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
 
             FileProperty fp = new FileProperty()
             {
@@ -372,6 +372,70 @@ namespace K2Field.SmartObjects.Services.BingMaps
         }
 
 
+        [Attributes.Method("GetMapImageByLocation", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Get Map Image By Location (Read)", "Get Map Image By Location (Read)",
+        new string[] { "Query" }, //required property array (no required properties for this sample)
+        new string[] { "Query", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat" }, //input property array (no optional input properties for this sample)
+        new string[] { "Query", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "Image", "ImageBase64", "ImageSize", "ImageFilename", "ImageContentType", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
+        public BingMaps GetMapImageByLocation()
+        {
+            /* need to:
+             * pushpin co-ordinates
+             * pushpint label
+             * map type - aerialwithlabels, etc
+             * image format - jpeg, png,
+             * map layer
+             * */
+
+            BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
+            PushPin p = new PushPin()
+            {
+                Latitude = this.Lat,
+                Longitude = this.Lon,
+            };
+            List<PushPin> pins = new List<PushPin>();
+            pins.Add(p);
+
+            DownloadedFile file = Bing.GetMapImageByLocation(this.Query, this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            BingResult res = Bing.GetMapImageMetadata(this.Lat.ToString(), this.Lon.ToString(), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+
+
+            if (res == null)
+            {
+                this.ResultStatus = "Error";
+                this.ResultMessage = "Failed to download and deserialize result";
+                return this;
+            }
+
+            if (file == null || res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
+            {
+                this.ResultStatus = "OK";
+                this.ResultMessage = "No results";
+                return this;
+            }
+
+            Resource resource = res.resourceSets[0].resources[0];
+
+            MapBingMaps(this, resource);
+            this.ImageBase64 = file.Base64;
+            this.ImageSize = file.Size;
+            string filename = Guid.NewGuid() + file.FileExtension;
+            this.ImageFilename = filename;
+            this.ImageContentType = file.ContentType;
+            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
+
+            FileProperty fp = new FileProperty()
+            {
+                Content = this.ImageBase64,
+                FileName = filename
+            };
+
+            this.Image = fp.Value.ToString();
+
+
+            this.ResultStatus = "OK";
+
+            return this;
+        }
 
 
         
@@ -410,7 +474,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
                     bm.Locality = resource.address.locality;
 
                 if (!string.IsNullOrWhiteSpace(resource.address.postalCode))
-                    bm.Postcode = resource.address.postalCode;
+                    bm.PostalCode = resource.address.postalCode;
 
                 if (!string.IsNullOrWhiteSpace(resource.address.landmark))
                     bm.Landmark = resource.address.landmark;
@@ -457,6 +521,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
             if (resource.zoom != null)
                 bm.ImageZoom = resource.zoom;
+
 
         }
 

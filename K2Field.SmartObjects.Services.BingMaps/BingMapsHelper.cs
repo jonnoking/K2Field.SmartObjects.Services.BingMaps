@@ -48,9 +48,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
             
             bing = GetBingMapsData(uri);
 
-            
-            
-            
             return bing; 
         }
 
@@ -77,6 +74,26 @@ namespace K2Field.SmartObjects.Services.BingMaps
             return bing;
         }
 
+        public DownloadedFile GetMapImageByLocation(string Location, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)
+        {
+            BingResult bing = SearchByLocation(Location, 1);
+            if (bing == null || bing.resourceSets == null || bing.resourceSets.Count() < 1 || bing.resourceSets[0].resources == null || bing.resourceSets[0].resources.Count() < 1)
+            {
+                return null;
+            }
+            return GetMapImage(GetImageUrl(bing.resourceSets[0].resources[0].point.coordinates[0].ToString(), bing.resourceSets[0].resources[0].point.coordinates[1].ToString(), Zoom, Width, Height, MapLayer, Pins, MapStyle, ImageFormat, DeclutterPins, 0));
+        }
+
+        public BingResult GetMapImageMetadataByLocation(string Location, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)
+        {
+            BingResult bing = SearchByLocation(Location, 1);
+            if (bing == null || bing.resourceSets == null || bing.resourceSets.Count() < 1 || bing.resourceSets[0].resources == null || bing.resourceSets[0].resources.Count() < 1)
+            {
+                return null;
+            }
+            return GetMapImageMetadata(GetImageUrl(bing.resourceSets[0].resources[0].point.coordinates[0].ToString(), bing.resourceSets[0].resources[0].point.coordinates[1].ToString(), Zoom, Width, Height, MapLayer, Pins, MapStyle, ImageFormat, DeclutterPins, 1));
+        }
+
         public BingResult GetMapImageMetadata(string uri)
         {
             uri = uri.Replace("mapMetadata=0", "mapMetadata=1");
@@ -88,14 +105,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
             return GetMapImageMetadata(GetImageUrl(Latitude, Longitude, Zoom, Width, Height, MapLayer, Pins, MapStyle, ImageFormat, DeclutterPins, 1));
         }
 
-        //public string GetMapImage(string uri)
-        //{
-        //    uri = uri.Replace("mapMetadata=1", "mapMetadata=0");
-        //    string base64 = string.Empty;
-        //    base64 = DownloadFileToBase64(uri);
-
-        //    return base64;
-        //}
 
         public DownloadedFile GetMapImage(string Latitude, string Longitude, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)
         {                       
@@ -155,7 +164,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
                     break;
             }
 
-            if (Zoom < 0 || Zoom > 21)
+            if (Zoom < 1 || Zoom > 21)
             {
                 // set default zoom if specified incorrectly
                 Zoom = 10;
