@@ -43,6 +43,11 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("ImageZoom", SoType.Number, "Image Zoom", "Image Zoom")]
         public int ImageZoom { get; set; }
 
+        [Attributes.Property("MapStyle", SoType.Number, "Map Style", "Map Style")]
+        public string MapStyle { get; set; }
+
+        [Attributes.Property("ImageFormat", SoType.Text, "Image Format", "Image Format")]
+        public string ImageFormat { get; set; }
 
         #endregion Inputs
 
@@ -105,7 +110,15 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("ImageUri", SoType.Text, "Image Uri", "Image Uri")]
         public string ImageUri { get; set; }
 
-        
+        [Attributes.Property("Image", SoType.File, "Image", "Image")]
+        public string Image { get; set; }
+
+        [Attributes.Property("ImageSize", SoType.Number, "Image Size", "Image Size")]
+        public int ImageSize { get; set; }
+
+        [Attributes.Property("ImageFilename", SoType.Text, "Image Filename", "Image Filename")]
+        public string ImageFilename { get; set; }
+
         [Attributes.Property("SouthLatitude", SoType.Decimal, "South Latitude", "South Latitude")]
         public decimal SouthLatitude { get; set; }
 
@@ -141,25 +154,9 @@ namespace K2Field.SmartObjects.Services.BingMaps
         new string[] { "Query", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
         public BingMaps SearchByLocationRead()
         {
-            // general query
-            //https://dev.virtualearth.net/REST/v1/Locations?query=perth,wa&includeNeighborhood=1&maxResults=1&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
+            BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
 
-            // context based search
-            //https://dev.virtualearth.net/REST/v1/Locations?culture=en-GB&query=Kings%20Road&o=xml&userLocation=51.504360719046616,-0.12600176611298197&o=xml&key=BingMapsKey
-
-
-            //lat lon serch
-            //https://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=json&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-            //image metadata
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
-            // image
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
-            //https://msdn.microsoft.com/en-us/library/ff701724.aspx
-
-            string uri = string.Format("https://dev.virtualearth.net/REST/v1/Locations?query={0}&includeNeighborhood=1&incl=ciso2&maxResults=1&key={1}", this.Query, ServiceConfiguration["BingMapsKey"].ToString());
-
-            BingResult res = GetBingMapsData(uri);
+            BingResult res = Bing.SearchByLocation(this.Query, 1);
 
             if (res == null)
             {
@@ -189,21 +186,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
         public List<BingMaps> SearchByLocationList()
         {
             List<BingMaps> results = new List<BingMaps>();
-            // general query
-            //https://dev.virtualearth.net/REST/v1/Locations?query=perth,wa&includeNeighborhood=1&maxResults=1&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-            // context based search
-            //https://dev.virtualearth.net/REST/v1/Locations?culture=en-GB&query=Kings%20Road&o=xml&userLocation=51.504360719046616,-0.12600176611298197&o=xml&key=BingMapsKey
-
-
-            //lat lon serch
-            //https://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=json&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-            //image metadata
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
-            // image
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
-            //https://msdn.microsoft.com/en-us/library/ff701724.aspx
 
             int max = 10;
             if (this.MaxResults > 0)
@@ -211,9 +193,9 @@ namespace K2Field.SmartObjects.Services.BingMaps
                 max = this.MaxResults;
             }
 
-            string uri = string.Format("https://dev.virtualearth.net/REST/v1/Locations?query={0}&includeNeighborhood=1&maxResults={1}&incl=ciso2&key={2}", this.Query, max, ServiceConfiguration["BingMapsKey"].ToString());
+            BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
 
-            BingResult res = GetBingMapsData(uri);
+            BingResult res = Bing.SearchByLocation(this.Query, max);
 
             if (res == null)
             {
@@ -248,30 +230,14 @@ namespace K2Field.SmartObjects.Services.BingMaps
         new string[] { "Lat", "Lon", "IncludeEntityTypes", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
         public BingMaps SearchByLatLonRead()
         {
-            // general query
-            //https://dev.virtualearth.net/REST/v1/Locations?query=perth,wa&includeNeighborhood=1&maxResults=1&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-            // context based search
-            //https://dev.virtualearth.net/REST/v1/Locations?culture=en-GB&query=Kings%20Road&o=xml&userLocation=51.504360719046616,-0.12600176611298197&o=xml&key=BingMapsKey
-
-
-            //lat lon serch
-            //https://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=json&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-            //image metadata
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
-            // image
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
-            //https://msdn.microsoft.com/en-us/library/ff701724.aspx
-
-            string uri = string.Format("http://dev.virtualearth.net/REST/v1/Locations/{0},{1}?o=json&includeNeighborhood=1&incl=ciso2&key={2}", this.Query, ServiceConfiguration["BingMapsKey"].ToString());
-
-            if(!string.IsNullOrWhiteSpace(this.IncludeEntityTypes))
+            if(string.IsNullOrWhiteSpace(this.IncludeEntityTypes))
             {
-                uri += uri + "&includeEntityTypes=" + this.IncludeEntityTypes;
+                this.IncludeEntityTypes = "";
             }
 
-            BingResult res = GetBingMapsData(uri);
+            BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
+
+            BingResult res = Bing.SearchByPoint(this.Lat.ToString(), this.Lon.ToString(), this.IncludeEntityTypes);
 
             if (res == null)
             {
@@ -296,41 +262,20 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
         [Attributes.Method("SearchByLatLon", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.List, "Search By Lat Lon", "Search By Lat Lon",
         new string[] { "Lat", "Lon" }, //required property array (no required properties for this sample)
-        new string[] { "Lat", "Lon", "IncludeEntityTypes", "MaxResults" }, //input property array (no optional input properties for this sample)
-        new string[] { "Lat", "Lon", "IncludeEntityTypes", "MaxResults", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        new string[] { "Lat", "Lon", "IncludeEntityTypes"}, //input property array (no optional input properties for this sample)
+        new string[] { "Lat", "Lon", "IncludeEntityTypes", "LocationName", "Latitude", "Longitude", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
         public List<BingMaps> SearchByLatLonList()
         {
             List<BingMaps> results = new List<BingMaps>();
-            // general query
-            //https://dev.virtualearth.net/REST/v1/Locations?query=perth,wa&includeNeighborhood=1&maxResults=1&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
 
-            // context based search
-            //https://dev.virtualearth.net/REST/v1/Locations?culture=en-GB&query=Kings%20Road&o=xml&userLocation=51.504360719046616,-0.12600176611298197&o=xml&key=BingMapsKey
-
-
-            //lat lon serch
-            //https://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=json&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-            //image metadata
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
-            // image
-            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
-            //https://msdn.microsoft.com/en-us/library/ff701724.aspx
-
-            int max = 10;
-            if (this.MaxResults > 0)
+            if (string.IsNullOrWhiteSpace(this.IncludeEntityTypes))
             {
-                max = this.MaxResults;
+                this.IncludeEntityTypes = "";
             }
 
-            string uri = string.Format("http://dev.virtualearth.net/REST/v1/Locations/{0},{1}?o=json&includeNeighborhood=1&incl=ciso2&key={2}", this.Query, ServiceConfiguration["BingMapsKey"].ToString());
+            BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
 
-            if (!string.IsNullOrWhiteSpace(this.IncludeEntityTypes))
-            {
-                uri += uri + "&includeEntityTypes=" + this.IncludeEntityTypes;
-            }
-
-            BingResult res = GetBingMapsData(uri);
+            BingResult res = Bing.SearchByPoint(this.Lat.ToString(), this.Lon.ToString(), this.IncludeEntityTypes);
 
             if (res == null)
             {
@@ -356,24 +301,81 @@ namespace K2Field.SmartObjects.Services.BingMaps
         }
 
 
-        private BingResult GetBingMapsData(string uri)
+
+        [Attributes.Method("GetMapImageByLatLon", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Get Map Image By Lat Lon Read", "Get Map Image By Lat Lon Read",
+        new string[] { "Lat", "Lon" }, //required property array (no required properties for this sample)
+        new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "Zoom", "MapStyle", "ImageFormat"}, //input property array (no optional input properties for this sample)
+        new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "Zoom", "MapStyle", "ImageFormat", "LocationName", "Latitude", "Longitude", "Image", "ImageBase64", "ImageSize", "ImageFilename", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "FormattedAddress", "Locality", "PostalCode", "Neighborhood", "Landmark", "EntityType", "Confidence", "ResultStatus", "ResultMessage" })] //return property array (2 properties for this example)
+        public BingMaps GetMapImageByLatLon()
         {
-            BingResult res = null;
-            try
+            //image metadata
+            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
+            // image
+            //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
+            //https://msdn.microsoft.com/en-us/library/ff701724.aspx
+
+            /* need to:
+             * pushpin co-ordinates
+             * pushpint label
+             * map type - aerialwithlabels, etc
+             * image format - jpeg, png,
+             * map layer
+             * */
+
+
+
+
+            BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
+            PushPin p = new PushPin()
             {
-                using (WebClient client = new WebClient())
-                {
-                    string result = client.DownloadString(uri);
-                    res = Newtonsoft.Json.JsonConvert.DeserializeObject<BingResult>(result);
-                }
-            }
-            catch (Exception ex)
+                Latitude = this.Lat,
+                Longitude = this.Lon,
+            };
+            List<PushPin> pins = new List<PushPin>();
+            pins.Add(p);
+
+            DownloadedFile file = Bing.GetMapImage(this.Lat.ToString(), this.Lon.ToString(), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            BingResult res = Bing.GetMapImageMetadata(this.Lat.ToString(), this.Lon.ToString(), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+
+
+            if (res == null)
             {
                 this.ResultStatus = "Error";
-                this.ResultMessage = ex.Message;
+                this.ResultMessage = "Failed to download and deserialize result";
             }
-            return res;
+
+            if (res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources.Count() < 1)
+            {
+                this.ResultStatus = "OK";
+                this.ResultMessage = "No results";
+            }
+
+            Resource resource = res.resourceSets[0].resources[0];
+
+            MapBingMaps(this, resource);
+            this.ImageBase64 = file.Base64;
+            this.ImageSize = file.Size;
+            string filename = Guid.NewGuid() + "." + file.FileType.ToLower();
+            this.ImageFilename = filename;
+
+            FileProperty fp = new FileProperty()
+            {
+                Content = this.ImageBase64,
+                FileName = filename
+            };
+            
+            this.Image = fp.Value.ToString();
+
+
+            this.ResultStatus = "OK";
+
+            return this;
         }
+
+
+
+
+        
 
 
         private void MapBingMaps(BingMaps bm, Resource resource)
@@ -464,66 +466,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
     }
 
     
-public class BingResult
-{
-public string authenticationResultCode { get; set; }
-public string brandLogoUri { get; set; }
-public string copyright { get; set; }
-public ResourceSet[] resourceSets { get; set; }
-public int statusCode { get; set; }
-public string statusDescription { get; set; }
-public string traceId { get; set; }
-}
-
-public class ResourceSet
-{
-public int estimatedTotal { get; set; }
-public Resource[] resources { get; set; }
-}
-
-public class Resource
-{
-public string __type { get; set; }
-public float[] bbox { get; set; }
-public string name { get; set; }
-public Point point { get; set; }
-public Address address { get; set; }
-public string confidence { get; set; }
-public string entityType { get; set; }
-public GeocodePoint[] geocodePoints { get; set; }
-public string[] matchCodes { get; set; }
-public int zoom { get; set; }
-public int imageHeight { get; set; }
-public int imageWidth { get; set; }
-}
-
-public class Point
-{
-public string type { get; set; }
-public float[] coordinates { get; set; }
-}
-
-public class Address
-{
-    public string addressLine { get; set; }
-    public string locality { get; set; }
-    public string adminDistrict { get; set; }
-    public string adminDistrict2 { get; set; }
-    public string countryRegion { get; set; }
-    public string countryRegioniso2 { get; set; }
-    public string formattedAddress { get; set; }
-    public string postalCode { get; set; }
-    public string neighborhood { get; set; }
-    public string landmark { get; set; }
-}
-
-public class GeocodePoint
-{
-public string type { get; set; }
-public float[] coordinates { get; set; }
-public string calculationMethod { get; set; }
-public string[] usageTypes { get; set; }
-}
 
 
 }
