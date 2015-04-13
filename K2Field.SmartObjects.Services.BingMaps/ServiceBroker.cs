@@ -16,8 +16,8 @@ namespace K2Field.SmartObjects.Services.BingMaps
         public override string DescribeSchema()
         {
             base.Service.Name = "BingMapsService";
-            base.Service.MetaData.DisplayName = "Bing Maps Service";
-            base.Service.MetaData.Description = "Bing Maps Service";
+            base.Service.MetaData.DisplayName = "Bing Maps";
+            base.Service.MetaData.Description = "Bing Maps";
 
             //Type newType = typeof(RESTService);
             //base.Service.ServiceObjects.Add(new SourceCode.SmartObjects.Services.ServiceSDK.Objects.ServiceObject(newType));
@@ -53,7 +53,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         {
             //Service.ServiceConfiguration.Add("TwitterUsername", true, "");
 
-            Service.ServiceConfiguration.Add("BingMapsKey", true, false);
+            Service.ServiceConfiguration.Add("BingMapsKey", true, "");
             //Service.ServiceConfiguration.Add(StringResources.SharePointURL, false, string.Empty);
             //Service.ServiceConfiguration.Add(StringResources.BindingName, false, string.Empty);
 

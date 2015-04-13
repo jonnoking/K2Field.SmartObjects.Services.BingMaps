@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -56,7 +57,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         public BingResult SearchByPoint(string Latitude, string Longitude, string IncludeEntityTypes)
         {
             BingResult bing = null;
-            string uri = string.Format("{0}/Locations/{1},{2}?o=json&includeNeighborhood=1&incl=ciso2&key={4}", BaseUri, Latitude, Longitude, BingMapsKey);
+            string uri = string.Format("{0}/Locations/{1},{2}?o=json&includeNeighborhood=1&incl=ciso2&key={3}", BaseUri, Latitude, Longitude, BingMapsKey);
 
             if(!string.IsNullOrWhiteSpace(IncludeEntityTypes))
             {
@@ -84,7 +85,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
         public BingResult GetMapImageMetadata(string Latitude, string Longitude, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)
         {
-            return GetMapImageMetadata(GetImageUrl(Latitude, Longitude, Zoom, MapStyle, Width, Height, MapLayer, Pins, ImageFormat, DeclutterPins, 1));
+            return GetMapImageMetadata(GetImageUrl(Latitude, Longitude, Zoom, Width, Height, MapLayer, Pins, MapStyle, ImageFormat, DeclutterPins, 1));
         }
 
         //public string GetMapImage(string uri)
@@ -98,7 +99,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
         public DownloadedFile GetMapImage(string Latitude, string Longitude, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)
         {                       
-            return GetMapImage(GetImageUrl(Latitude, Longitude, Zoom, MapStyle, Width, Height, MapLayer, Pins, ImageFormat, DeclutterPins, 0));
+            return GetMapImage(GetImageUrl(Latitude, Longitude, Zoom, Width, Height, MapLayer, Pins, MapStyle, ImageFormat, DeclutterPins, 0));
 
         }
 
@@ -108,7 +109,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         }
 
         
-        public string GetImageUrl(string Latitude, string Longitude, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat="jpeg", bool DeclutterPins=false, int MapMetadata=0)
+        public string GetImageUrl(string Latitude, string Longitude, int Zoom, int Width, int Height, string MapLayer, List<PushPin> Pins, string MapStyle="road", string ImageFormat="jpeg", bool DeclutterPins=false, int MapMetadata=0)
         {
             //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
 
@@ -120,7 +121,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
 //OrdnanceSurvey (london only)
 //CollinsBart (london only)
 
-            if (!MapStyle.Equals("aerial", StringComparison.CurrentCultureIgnoreCase) || !MapStyle.Equals("aerialwithlabels", StringComparison.CurrentCultureIgnoreCase) 
+            if (MapStyle == null || !MapStyle.Equals("aerial", StringComparison.CurrentCultureIgnoreCase) || !MapStyle.Equals("aerialwithlabels", StringComparison.CurrentCultureIgnoreCase) 
                 || !MapStyle.Equals("road", StringComparison.CurrentCultureIgnoreCase))
 
             {
@@ -133,6 +134,10 @@ namespace K2Field.SmartObjects.Services.BingMaps
             }
             //MapLayer =TrafficFlow
 
+            if (string.IsNullOrWhiteSpace(ImageFormat))
+            {
+                ImageFormat = "jpeg";
+            }
             switch (ImageFormat.ToLower())
             {
                 case "jpg":
@@ -154,6 +159,15 @@ namespace K2Field.SmartObjects.Services.BingMaps
             {
                 // set default zoom if specified incorrectly
                 Zoom = 10;
+            }
+
+            if(Width < 1)
+            {
+                Width = 300;
+            }
+            if (Height < 1)
+            {
+                Height = 300;
             }
 
             //highlightEntity - not done
@@ -228,6 +242,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
                 }
                 File.Base64 = Convert.ToBase64String(data);
                 File.Downloaded = DateTime.Now;
+                File.FileExtension = GetDefaultExtension(File.ContentType);
             }
             return File;
 
@@ -243,19 +258,49 @@ namespace K2Field.SmartObjects.Services.BingMaps
             string base64 = Convert.ToBase64String(data);
             return base64;
         }
+
+        //http://www.cyotek.com/blog/mime-types-and-file-extensions
+        public static string GetDefaultExtension(string mimeType)
+        {
+            string result;
+            RegistryKey key;
+            object value;
+
+            key = Registry.ClassesRoot.OpenSubKey(@"MIME\Database\Content Type\" + mimeType, false);
+            value = key != null ? key.GetValue("Extension", null) : null;
+            result = value != null ? value.ToString() : string.Empty;
+
+            return result;
+        }
+
+        public static string GetMimeTypeFromExtension(string extension)
+        {
+            string result;
+            RegistryKey key;
+            object value;
+
+            if (!extension.StartsWith("."))
+                extension = "." + extension;
+
+            key = Registry.ClassesRoot.OpenSubKey(extension, false);
+            value = key != null ? key.GetValue("Content Type", null) : null;
+            result = value != null ? value.ToString() : string.Empty;
+
+            return result;
+        }
     }
 
     public class PushPin
     {
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public float Latitude { get; set; }
+        public float Longitude { get; set; }
         public string Name { get; set; }
     }
     
     public class DownloadedFile
     {
         public string Base64 { get; set; }
-        public string FileType { get; set; }
+        public string FileExtension { get; set; }
         public string FileName { get; set; }
         public DateTime Downloaded { get; set; }
         public string ContentType { get; set; }
