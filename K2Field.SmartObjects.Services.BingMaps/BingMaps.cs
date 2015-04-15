@@ -14,6 +14,8 @@ namespace K2Field.SmartObjects.Services.BingMaps
     [Attributes.ServiceObject("BingMaps", "Bing Maps", "Bing Maps")]
     public class BingMaps
     {
+        const string _decimalFormat = "#.######";
+
         public ServiceConfiguration ServiceConfiguration { get; set; }
 
         #region Inputs
@@ -21,11 +23,11 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("Query", SoType.Text, "Query", "Query")]
         public string Query { get; set; }
 
-        [Attributes.Property("Lat", SoType.Decimal, "Lat", "Lat")]
-        public float Lat { get; set; }
+        [Attributes.Property("Lat", SoType.Text, "Lat", "Lat")]
+        public string Lat { get; set; }
 
-        [Attributes.Property("Lon", SoType.Decimal, "Lon", "Lon")]
-        public float Lon { get; set; }
+        [Attributes.Property("Lon", SoType.Text, "Lon", "Lon")]
+        public string Lon { get; set; }
 
         [Attributes.Property("IncludeEntityTypes", SoType.Text, "Include Entity Types", "Include Entity Types")]
         public string IncludeEntityTypes { get; set; }
@@ -63,8 +65,8 @@ namespace K2Field.SmartObjects.Services.BingMaps
         //[Attributes.Property("WebSite", SoType.Text, "Web Site", "Web Site")]
         //public string WebSite { get; set; }
 
-        [Attributes.Property("Distance", SoType.Decimal, "Distance", "Distance")]
-        public float Distance { get; set; }
+        [Attributes.Property("Distance", SoType.Text, "Distance", "Distance")]
+        public string Distance { get; set; }
 
         [Attributes.Property("AddressLine", SoType.Text, "Address Line", "Address Line")]
         public string AddressLine { get; set; }
@@ -93,11 +95,11 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("Landmark", SoType.Text, "Landmark", "Landmark")]
         public string Landmark { get; set; }
 
-        [Attributes.Property("Latitude", SoType.Decimal, "Latitude", "Latitude")]
-        public float Latitude { get; set; }
+        [Attributes.Property("Latitude", SoType.Text, "Latitude", "Latitude")]
+        public string Latitude { get; set; }
 
-        [Attributes.Property("Longitude", SoType.Decimal, "Longitude", "Longitude")]
-        public float Longitude { get; set; }
+        [Attributes.Property("Longitude", SoType.Text, "Longitude", "Longitude")]
+        public string Longitude { get; set; }
 
         [Attributes.Property("ImagePath", SoType.Text, "Image Path", "Image Path")]
         public string ImagePath { get; set; }
@@ -120,17 +122,17 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("ImageContentType", SoType.Text, "Image Content Type", "Image Content Type")]
         public string ImageContentType { get; set; }
 
-        [Attributes.Property("SouthLatitude", SoType.Decimal, "South Latitude", "South Latitude")]
-        public float SouthLatitude { get; set; }
+        [Attributes.Property("SouthLatitude", SoType.Text, "South Latitude", "South Latitude")]
+        public string SouthLatitude { get; set; }
 
-        [Attributes.Property("WestLongitude", SoType.Decimal, "West Longitude", "West Longitude")]
-        public float WestLongitude { get; set; }
+        [Attributes.Property("WestLongitude", SoType.Text, "West Longitude", "West Longitude")]
+        public string WestLongitude { get; set; }
 
-        [Attributes.Property("NorthLatitude", SoType.Decimal, "North Latitude", "North Latitude")]
-        public float NorthLatitude { get; set; }
+        [Attributes.Property("NorthLatitude", SoType.Text, "North Latitude", "North Latitude")]
+        public string NorthLatitude { get; set; }
 
-        [Attributes.Property("EastLongitude", SoType.Decimal, "East Longitude", "East Longitude")]
-        public float EastLongitude { get; set; }
+        [Attributes.Property("EastLongitude", SoType.Text, "East Longitude", "East Longitude")]
+        public string EastLongitude { get; set; }
 
         [Attributes.Property("Confidence", SoType.Text, "Confidence", "Confidence")]
         public string Confidence { get; set; }
@@ -246,7 +248,13 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
 
-            BingResult res = Bing.SearchByPoint(this.Lat.ToString(), this.Lon.ToString(), this.IncludeEntityTypes);
+
+            //decimal.Round(decimal.Parse(this.Lat), 5, MidpointRounding.AwayFromZero).ToString();
+
+            //decimal.Parse(this.Lat).ToString("#.#####");
+
+            BingResult res = Bing.SearchByPoint(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.IncludeEntityTypes);
+//            BingResult res = Bing.SearchByPoint(this.Lat.ToString(), this.Lon.ToString(), this.IncludeEntityTypes);
 
             if (res == null)
             {
@@ -284,7 +292,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
 
-            BingResult res = Bing.SearchByPoint(this.Lat.ToString(), this.Lon.ToString(), this.IncludeEntityTypes);
+            BingResult res = Bing.SearchByPoint(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.IncludeEntityTypes);
 
             if (res == null || res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
             {
@@ -322,29 +330,47 @@ namespace K2Field.SmartObjects.Services.BingMaps
              * map layer
              * */
 
+            try
+            {
+                float.Parse(this.Lat);
+                float.Parse(this.Lon);
+            }
+            catch (Exception ex)
+            {
+                this.ResultStatus = "Error";
+                this.ResultMessage = "Latitude and Longitude must be supplied as a float xxx.xxxxxx";
+                return this;
+            }
+
+
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
             PushPin p = new PushPin()
             {
+                //Latitude = float.Parse(this.Lat),
+                //Longitude = float.Parse(this.Lon),
                 Latitude = this.Lat,
                 Longitude = this.Lon,
+
             };
             List<PushPin> pins = new List<PushPin>();
             pins.Add(p);
 
-            DownloadedFile file = Bing.GetMapImage(this.Lat.ToString(), this.Lon.ToString(), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
-            BingResult res = Bing.GetMapImageMetadata(this.Lat.ToString(), this.Lon.ToString(), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            DownloadedFile file = Bing.GetMapImage(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            BingResult res = Bing.GetMapImageMetadata(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
 
 
             if (res == null)
             {
                 this.ResultStatus = "Error";
                 this.ResultMessage = "Failed to download and deserialize result";
+                return this;
             }
 
             if (res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
             {
                 this.ResultStatus = "OK";
                 this.ResultMessage = "No results";
+                return this;
             }
 
             Resource resource = res.resourceSets[0].resources[0];
@@ -386,9 +412,23 @@ namespace K2Field.SmartObjects.Services.BingMaps
              * map layer
              * */
 
+            try
+            {
+                float.Parse(this.Lat);
+                float.Parse(this.Lon);
+            }
+            catch (Exception ex)
+            {
+                this.ResultStatus = "Error";
+                this.ResultMessage = "Latitude and Longitude must be supplied as a float xxx.xxxxxx";
+                return this;
+            }
+
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
             PushPin p = new PushPin()
             {
+                //Latitude = float.Parse(this.Lat),
+                //Longitude = float.Parse(this.Lon),
                 Latitude = this.Lat,
                 Longitude = this.Lon,
             };
@@ -396,7 +436,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
             pins.Add(p);
 
             DownloadedFile file = Bing.GetMapImageByLocation(this.Query, this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
-            BingResult res = Bing.GetMapImageMetadata(this.Lat.ToString(), this.Lon.ToString(), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            BingResult res = Bing.GetMapImageMetadata(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
 
 
             if (res == null)
@@ -488,39 +528,65 @@ namespace K2Field.SmartObjects.Services.BingMaps
                 bm.EntityType = resource.entityType;
 
 
+            //float latout;
+            //if (resource.point != null && resource.point.coordinates.Length > 0 && float.TryParse(resource.point.coordinates[0].ToString(), out latout))
+            //    bm.Latitude = latout;
+
+            //float lonout;
+            //if (resource.point != null && resource.point.coordinates.Length > 1 && float.TryParse(resource.point.coordinates[1].ToString(), out lonout))
+            //    bm.Longitude = lonout;
+
+
+            //float slatout = 0;
+            //if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[0].ToString(), out slatout))
+            //    bm.SouthLatitude = slatout;
+
+            //float wlonout;
+            //if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[1].ToString(), out wlonout))
+            //    bm.WestLongitude = wlonout;
+
+            //float nlatout;
+            //if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[2].ToString(), out nlatout))
+            //    bm.NorthLatitude = nlatout;
+
+            //float elonout;
+            //if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[3].ToString(), out elonout))
+            //    bm.EastLongitude = elonout;
+
+
             float latout;
-            if (resource.point != null && resource.point.coordinates.Length > 0 && float.TryParse(resource.point.coordinates[0].ToString(), out latout))
-                bm.Latitude = latout;
+            if (resource.point != null && resource.point.coordinates.Length > 0)
+                bm.Latitude = resource.point.coordinates[0].ToString();
 
             float lonout;
-            if (resource.point != null && resource.point.coordinates.Length > 1 && float.TryParse(resource.point.coordinates[1].ToString(), out lonout))
-                bm.Longitude = lonout;
+            if (resource.point != null && resource.point.coordinates.Length > 1)
+                bm.Longitude = resource.point.coordinates[1].ToString();
 
 
             float slatout = 0;
-            if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[0].ToString(), out slatout))
-                bm.SouthLatitude = slatout;
+            if (resource.bbox != null && resource.bbox.Length > 0)
+                bm.SouthLatitude = resource.bbox[0].ToString();
 
             float wlonout;
-            if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[1].ToString(), out wlonout))
-                bm.WestLongitude = wlonout;
+            if (resource.bbox != null && resource.bbox.Length > 0)
+                bm.WestLongitude = resource.bbox[1].ToString();
 
             float nlatout;
-            if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[2].ToString(), out nlatout))
-                bm.NorthLatitude = nlatout;
+            if (resource.bbox != null && resource.bbox.Length > 0)
+                bm.NorthLatitude = resource.bbox[2].ToString();
 
             float elonout;
-            if (resource.bbox != null && resource.bbox.Length > 0 && float.TryParse(resource.bbox[3].ToString(), out elonout))
-                bm.EastLongitude = elonout;
+            if (resource.bbox != null && resource.bbox.Length > 0)
+                bm.EastLongitude = resource.bbox[3].ToString();
 
-            if (resource.imageWidth != null)
-                bm.ImageWidth = resource.imageWidth;
+            
+            bm.ImageWidth = resource.imageWidth;
 
-            if (resource.imageHeight != null)
-                bm.ImageHeight = resource.imageHeight;
+            
+            bm.ImageHeight = resource.imageHeight;
 
-            if (resource.zoom != null)
-                bm.ImageZoom = resource.zoom;
+            
+            bm.ImageZoom = resource.zoom;
 
 
         }

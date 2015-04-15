@@ -301,8 +301,8 @@ namespace K2Field.SmartObjects.Services.BingMaps
 
     public class PushPin
     {
-        public float Latitude { get; set; }
-        public float Longitude { get; set; }
+        public string Latitude { get; set; } //float
+        public string Longitude { get; set; } //float
         public string Name { get; set; }
     }
     
@@ -339,7 +339,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
     public class Resource
     {
         public string __type { get; set; }
-        public float[] bbox { get; set; }
+        public string[] bbox { get; set; } //float
         public string name { get; set; }
         public Point point { get; set; }
         public Address address { get; set; }
@@ -355,7 +355,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
     public class Point
     {
         public string type { get; set; }
-        public float[] coordinates { get; set; }
+        public string[] coordinates { get; set; } // float
     }
 
     public class Address
@@ -375,7 +375,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
     public class GeocodePoint
     {
         public string type { get; set; }
-        public float[] coordinates { get; set; }
+        public string[] coordinates { get; set; } // float
         public string calculationMethod { get; set; }
         public string[] usageTypes { get; set; }
     }
