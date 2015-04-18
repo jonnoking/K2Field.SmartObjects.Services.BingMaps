@@ -23,24 +23,6 @@ namespace K2Field.SmartObjects.Services.BingMaps
         private const string BaseUri = "https://dev.virtualearth.net/REST/v1";
 
 
-        // general query
-        //https://dev.virtualearth.net/REST/v1/Locations?query=perth,wa&includeNeighborhood=1&maxResults=1&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-        // context based search
-        //https://dev.virtualearth.net/REST/v1/Locations?culture=en-GB&query=Kings%20Road&o=xml&userLocation=51.504360719046616,-0.12600176611298197&o=xml&key=BingMapsKey
-
-
-        //lat lon serch
-        //https://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=json&key=AjQ6xFBNP_8eWx1BuFY7AOkvidc-qI2UaV-m7GwVuCF4a0nhNUitcwP9F0AAFz97
-
-        //image metadata
-        //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=1&key=BingMapsKey
-        // image
-        //http://dev.virtualearth.net/REST/v1/Imagery/Map/AerialWithLabels/47.610,-122.107/10?mapSize=300,300&pushpin=47.610,-122.107&mapLayer=trafficflow&format=jpeg&mapMetadata=0
-        //https://msdn.microsoft.com/en-us/library/ff701724.aspx
-
-
-
         public BingResult SearchByLocation(string Query, int MaxResults)
         {
             string uri = string.Format("{0}/Locations?query={1}&includeNeighborhood=1&incl=ciso2&maxResults={2}&key={3}", BaseUri, Query, MaxResults, BingMapsKey);
