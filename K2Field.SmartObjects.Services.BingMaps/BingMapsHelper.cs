@@ -74,14 +74,24 @@ namespace K2Field.SmartObjects.Services.BingMaps
             return bing;
         }
 
-        public DownloadedFile GetMapImageByLocation(string Location, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)
+        public DownloadedFile GetMapImageByLocation(string Location, int Zoom, string MapStyle, int Width, int Height, string MapLayer, string ImageFormat = "jpeg", bool DeclutterPins = false)
         {
             BingResult bing = SearchByLocation(Location, 1);
             if (bing == null || bing.resourceSets == null || bing.resourceSets.Count() < 1 || bing.resourceSets[0].resources == null || bing.resourceSets[0].resources.Count() < 1)
             {
                 return null;
             }
-            return GetMapImage(GetImageUrl(bing.resourceSets[0].resources[0].point.coordinates[0].ToString(), bing.resourceSets[0].resources[0].point.coordinates[1].ToString(), Zoom, Width, Height, MapLayer, Pins, MapStyle, ImageFormat, DeclutterPins, 0));
+            PushPin p = new PushPin()
+            {
+                //Latitude = float.Parse(this.Lat),
+                //Longitude = float.Parse(this.Lon),
+                Latitude = decimal.Parse(bing.resourceSets[0].resources[0].point.coordinates[0]).ToString("#.######"),
+                Longitude = decimal.Parse(bing.resourceSets[0].resources[0].point.coordinates[1]).ToString("#.######")
+            };
+            List<PushPin> pins = new List<PushPin>();
+            pins.Add(p);
+
+            return GetMapImage(GetImageUrl(bing.resourceSets[0].resources[0].point.coordinates[0].ToString(), bing.resourceSets[0].resources[0].point.coordinates[1].ToString(), Zoom, Width, Height, MapLayer, pins, MapStyle, ImageFormat, DeclutterPins, 0));
         }
 
         public BingResult GetMapImageMetadataByLocation(string Location, int Zoom, string MapStyle, int Width, int Height, string MapLayer, List<PushPin> Pins, string ImageFormat = "jpeg", bool DeclutterPins = false)

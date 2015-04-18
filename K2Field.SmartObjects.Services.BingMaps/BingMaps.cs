@@ -319,7 +319,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Method("GetMapImageByLatLon", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Get Map Image By Lat Lon (Read)", "Get Map Image By Lat Lon (Read)",
         new string[] { "Lat", "Lon" }, //required property array (no required properties for this sample)
         new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat"}, //input property array (no optional input properties for this sample)
-        new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "Image", "ImageBase64", "ImageSize", "ImageFilename", "ImageContentType", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
+        new string[] { "Lat", "Lon", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "Image", "ImageBase64", "ImageSize", "ImageFilename", "ImageContentType", "ResultStatus", "ResultMessage" })]
         public BingMaps GetMapImageByLatLon()
         {
             /* need to:
@@ -356,32 +356,38 @@ namespace K2Field.SmartObjects.Services.BingMaps
             pins.Add(p);
 
             DownloadedFile file = Bing.GetMapImage(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
-            BingResult res = Bing.GetMapImageMetadata(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            //BingResult res = Bing.GetMapImageMetadata(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            //BingResult res = Bing.SearchByPoint(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), "");
+            //BingResult res = Bing.SearchByPoint(this.Lat, this.Lon, "");
 
 
-            if (res == null)
-            {
-                this.ResultStatus = "Error";
-                this.ResultMessage = "Failed to download and deserialize result";
-                return this;
-            }
+            //if (res == null)
+            //{
+            //    this.ResultStatus = "Error";
+            //    this.ResultMessage = "Failed to download and deserialize result";
+            //    return this;
+            //}
 
-            if (res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
+            if (file == null)
             {
                 this.ResultStatus = "OK";
                 this.ResultMessage = "No results";
                 return this;
             }
 
-            Resource resource = res.resourceSets[0].resources[0];
-            
-            MapBingMaps(this, resource);
+            //if (res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
+            //{
+            //    Resource resource = res.resourceSets[0].resources[0];
+
+            //    MapBingMaps(this, resource);
+            //}
+
             this.ImageBase64 = file.Base64;
             this.ImageSize = file.Size;
             string filename = Guid.NewGuid() + file.FileExtension;
             this.ImageFilename = filename;
             this.ImageContentType = file.ContentType;
-            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
+//            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
 
             FileProperty fp = new FileProperty()
             {
@@ -391,6 +397,19 @@ namespace K2Field.SmartObjects.Services.BingMaps
             
             this.Image = fp.Value.ToString();
 
+            // nothing specied so set defaults
+            if (this.ImageWidth == 0)
+            {
+                this.ImageWidth = 300;
+            }
+            if (this.ImageHeight == 0)
+            {
+                this.ImageHeight = 300;
+            }
+            if (this.ImageZoom == 0)
+            {
+                this.ImageZoom = 10;
+            }
 
             this.ResultStatus = "OK";
 
@@ -401,7 +420,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Method("GetMapImageByLocation", SourceCode.SmartObjects.Services.ServiceSDK.Types.MethodType.Read, "Get Map Image By Location (Read)", "Get Map Image By Location (Read)",
         new string[] { "Query" }, //required property array (no required properties for this sample)
         new string[] { "Query", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat" }, //input property array (no optional input properties for this sample)
-        new string[] { "Query", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "Image", "ImageBase64", "ImageSize", "ImageFilename", "ImageContentType", "LocationName", "Latitude", "Longitude", "LocationName", "FormattedAddress", "AddressLine", "AdminDistrict", "AdminDistrict2", "CountryRegion", "CountryRegionIso2", "PostalCode", "Locality", "Landmark", "SouthLatitude", "WestLongitude", "NorthLatitude", "EastLongitude", "Confidence", "EntityType", "EstimatedTotal", "ResultStatus", "ResultMessage" })]
+        new string[] { "Query", "ImageWidth", "ImageHeight", "ImageZoom", "MapStyle", "ImageFormat", "Image", "ImageBase64", "ImageSize", "ImageFilename", "ImageContentType", "ResultStatus", "ResultMessage" })]
         public BingMaps GetMapImageByLocation()
         {
             /* need to:
@@ -412,56 +431,55 @@ namespace K2Field.SmartObjects.Services.BingMaps
              * map layer
              * */
 
-            try
-            {
-                float.Parse(this.Lat);
-                float.Parse(this.Lon);
-            }
-            catch (Exception ex)
-            {
-                this.ResultStatus = "Error";
-                this.ResultMessage = "Latitude and Longitude must be supplied as a float xxx.xxxxxx";
-                return this;
-            }
-
             BingMapsHelper Bing = new BingMapsHelper(ServiceConfiguration["BingMapsKey"].ToString());
-            PushPin p = new PushPin()
-            {
-                //Latitude = float.Parse(this.Lat),
-                //Longitude = float.Parse(this.Lon),
-                Latitude = this.Lat,
-                Longitude = this.Lon,
-            };
-            List<PushPin> pins = new List<PushPin>();
-            pins.Add(p);
 
-            DownloadedFile file = Bing.GetMapImageByLocation(this.Query, this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
-            BingResult res = Bing.GetMapImageMetadata(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", pins, this.ImageFormat, false);
+            DownloadedFile file = Bing.GetMapImageByLocation(this.Query, this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", this.ImageFormat, false);
+            //BingResult res = Bing.GetMapImageMetadata(decimal.Parse(this.Lat).ToString(_decimalFormat), decimal.Parse(this.Lon).ToString(_decimalFormat), this.ImageZoom, this.MapStyle, this.ImageWidth, this.ImageHeight, "", null, this.ImageFormat, false);
+            //BingResult res = Bing.SearchByLocation(this.Query, 1);
 
+            //if (res == null)
+            //{
+            //    this.ResultStatus = "Error";
+            //    this.ResultMessage = "Failed to download and deserialize result";
+            //    return this;
+            //}
 
-            if (res == null)
-            {
-                this.ResultStatus = "Error";
-                this.ResultMessage = "Failed to download and deserialize result";
-                return this;
-            }
-
-            if (file == null || res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
+            if (file == null)
             {
                 this.ResultStatus = "OK";
                 this.ResultMessage = "No results";
                 return this;
             }
 
-            Resource resource = res.resourceSets[0].resources[0];
 
-            MapBingMaps(this, resource);
+            //if (res.resourceSets == null || res.resourceSets.Count() < 1 || res.resourceSets[0].resources == null || res.resourceSets[0].resources.Count() < 1)
+            //{
+            //    Resource resource = res.resourceSets[0].resources[0];
+
+            //    MapBingMaps(this, resource);
+            //}
+
             this.ImageBase64 = file.Base64;
             this.ImageSize = file.Size;
             string filename = Guid.NewGuid() + file.FileExtension;
             this.ImageFilename = filename;
             this.ImageContentType = file.ContentType;
-            this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
+
+            // nothing specied so set defaults
+            if (this.ImageWidth == 0)
+            {
+                this.ImageWidth = 300;
+            }
+            if (this.ImageHeight == 0)
+            {
+                this.ImageHeight = 300;
+            }
+            if (this.ImageZoom == 0)
+            {
+                this.ImageZoom = 10;
+            }
+
+            //this.EstimatedTotal = res.resourceSets[0].estimatedTotal;
 
             FileProperty fp = new FileProperty()
             {
@@ -579,14 +597,16 @@ namespace K2Field.SmartObjects.Services.BingMaps
             if (resource.bbox != null && resource.bbox.Length > 0)
                 bm.EastLongitude = resource.bbox[3].ToString();
 
-            
-            bm.ImageWidth = resource.imageWidth;
 
-            
-            bm.ImageHeight = resource.imageHeight;
+            if (resource.imageWidth > 0)
+                bm.ImageWidth = resource.imageWidth;
 
-            
-            bm.ImageZoom = resource.zoom;
+            if (resource.imageHeight > 0)
+                bm.ImageHeight = resource.imageHeight;
+
+
+            if (resource.zoom > 0)
+                bm.ImageZoom = resource.zoom;
 
 
         }
