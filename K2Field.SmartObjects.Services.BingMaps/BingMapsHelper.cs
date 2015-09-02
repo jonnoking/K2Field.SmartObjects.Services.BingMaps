@@ -122,14 +122,29 @@ namespace K2Field.SmartObjects.Services.BingMaps
 //OrdnanceSurvey (london only)
 //CollinsBart (london only)
 
-            if (MapStyle == null || !MapStyle.Equals("aerial", StringComparison.CurrentCultureIgnoreCase) || !MapStyle.Equals("aerialwithlabels", StringComparison.CurrentCultureIgnoreCase) 
-                || !MapStyle.Equals("road", StringComparison.CurrentCultureIgnoreCase))
-
+            if (string.IsNullOrWhiteSpace(MapStyle))
             {
                 MapStyle = "road";
             }
 
-            if (!string.IsNullOrWhiteSpace(MapLayer) && !MapStyle.Equals("TrafficFlow"))
+            switch (MapStyle.ToLower())
+            {
+                case "aerial":
+                    MapStyle = "aerial";
+                    break;
+                case "aerialwithlabels":
+                    MapStyle = "aerialwithlabels";
+                    break;
+                case "road":
+                    MapStyle = "road";
+                    break;
+                default:
+                    MapStyle = "road";
+                    break;
+
+            }
+
+            if (!string.IsNullOrWhiteSpace(MapLayer) && !MapLayer.Equals("TrafficFlow"))
             {
                 MapLayer = "";
             }

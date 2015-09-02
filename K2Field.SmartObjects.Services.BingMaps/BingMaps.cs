@@ -46,7 +46,7 @@ namespace K2Field.SmartObjects.Services.BingMaps
         [Attributes.Property("ImageZoom", SoType.Number, "Image Zoom", "Image Zoom")]
         public int ImageZoom { get; set; }
 
-        [Attributes.Property("MapStyle", SoType.Number, "Map Style", "Map Style")]
+        [Attributes.Property("MapStyle", SoType.Text, "Map Style", "Map Style")]
         public string MapStyle { get; set; }
 
         [Attributes.Property("ImageFormat", SoType.Text, "Image Format", "Image Format")]
